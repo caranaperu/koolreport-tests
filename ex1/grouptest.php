@@ -5,8 +5,108 @@
  * Date: 19/08/18
  * Time: 05:02 AM
  */
-
+require_once "../../../../koolreport/autoload.php";
 use \koolreport\core\Utility;
+use \koolreport\processes\Group;
+use \koolreport\processes\Sort;
+use \koolreport\processes\Limit;
+
+
+class VeritradeAutosTest extends \koolreport\KoolReport
+{
+    use \koolreport\export\Exportable;
+
+    public function settings()
+    {
+        return array(
+            "dataSources"=>array(
+                "sqlserver"=>array(
+                    'host' => '192.168.0.5',
+                    'username' => 'sa',
+                    'password' => 'Melivane100',
+                    'dbname' => 'veritrade',
+                    'class' => "\koolreport\datasources\SQLSRVDataSource"
+                ),
+            )
+        );
+    }
+
+    public function setup()
+    {
+        $this->src('sqlserver')
+            ->query("SELECT MARCA,MODELO,ANO_REPORTE as AÑO,count(*) as CONTADOR,count(*)*2 as SUMADOR FROM veritrade group by MARCA,MODELO,ANO_REPORTE order by MARCA,MODELO,ANO_REPORTE")
+            #->query("SELECT MARCA,MODELO,ANO_REPORTE,count(*) as CONTADOR FROM veritrade WHERE MARCA=:MARCA group by MARCA,MODELO,ANO_REPORTE order by MARCA,MODELO,ANO_REPORTE")
+            #->params(array(":MARCA"=>$this->params["MARCA"]))
+            #->pipe(new Limit(array(1000)))
+            #->pipe(new \koolreport\processes\AggregatedColumn(array("total"=>array("sum","CONTADOR"))))
+            ->pipe($this->dataStore('Veritrade'));
+    }
+}
+
+$veritradeAutos = new VeritradeAutosTest();
+$veritradeAutos->run();
+
+$setup = [
+    "name" => "ptable",
+    //"dataStore" => $this->dataStore('Veritrade'),
+    "showFooter" => "bottom",
+    "columns" => [
+        "MARCA",
+        "MODELO" => [
+            "footer" => "sum",
+            "footerText" => "Total: @value"
+        ],
+        "ANO_REPORTE"=>array("cssStyle"=>"text-align:right"),
+        "CONTADOR" => [
+            "footer" => "sum",
+            "footerText" => "Total: @value",
+            "cssStyle" => "text-align:right"
+        ]
+    ],
+    "paging"=>array(
+        "pageSize"=>40,
+        "align"=>"center",
+        "pageIndex"=>0,
+    ),
+    "fixedHeader" => true,
+
+    "options" => [
+        "fixedHeader" => true,
+        "rowGroup" => true,
+        "processing" => true,
+    ],
+    "removeDuplicate2" => [
+        "fields"=>  ["MARCA","MODELO","AÑO" ],
+        "options"=> ["showfooter"=>"bottom","style"=>"one_line"]
+    ],
+    "removeDuplicate" => [
+        "fields"=>  [
+            "MARCA" => [
+                "agg" => array(
+                    "sum" => [
+                        "CONTADOR",
+                        "SUMADOR"
+                    ],
+                    "max" => ["AÑO"],
+                    "count" => ["MODELO"]
+                )
+            ],
+            "MODELO" => [
+                "agg" => array(
+                    "avg" => ["CONTADOR"],
+                    "count" => ["AÑO"]
+                )
+            ],
+           # "AÑO" => ["agg" => array("sum" => ["CONTADOR"])]
+        ],
+        "options"=> ["showfooter"=>"top","style"=>"one_line"]
+    ]
+];
+
+
+$rds = Utility::get($setup,"removeDuplicate");
+$f  = Utility::get($setup,"columns");
+#return;
 
 $data2 = array(
     array("MARCA"=>"Toyota","XX"=>"XX01","MODELO"=>"Corolla","AÑO"=>2010,"CONTADOR"=>10,"SUMADOR"=>10),
@@ -54,21 +154,14 @@ $fields2 = array(
 );
 
 
-$groups = array(
-    "fields"=>  array(
-        "MARCA"=> array("agg" => array("sum"=>["CONTADOR","SUMADOR"],"max"=>["AÑO"],"count"=>["MODELO"])),
-        "MODELO"=>array("agg" => array("avg"=>["CONTADOR"],"count"=>["AÑO"])),
-        "AÑO"=> array("agg" => array("sum"=>["CONTADOR"]))
-    ),
-    "options"=> array("showfooter"=>"bottom","style"=>"one_line")
-);
+$groups = Utility::get($setup,"removeDuplicate");
 
-$fields = [
+$showColumnsKeys = [
     "MARCA","MODELO","AÑO","CONTADOR","SUMADOR"
 ];
 
 #print_r($groups);
-/*foreach($fieldsxx as $field) {
+/*foreach($showColumnsKeysxx as $field) {
     print ($field);
 
     echo ("*************\n");
@@ -88,12 +181,21 @@ $fields = [
 
 //return;
 $idx = 0;
-$c = "cnt";
 $levelsAgg = [];
 
-$groupKeys = array_keys($groups["fields"]);
-foreach ($data as $record) {
-    if ($idx == 0) {
+if (isset($groups)) {
+    $fieldList = $groups["fields"];
+    if (isset($fieldList[0])) {
+        $groupKeys = $fieldList;
+    } else {
+        $groupKeys = array_keys($fieldList);
+    }
+}
+//$groupKeys = array_keys($groups["fields"]);
+$veritradeAutos->dataStore("Veritrade")->popStart();
+while($record = $veritradeAutos->dataStore("Veritrade")->pop()) {
+//foreach ($data as $record) {
+    if (!isset($fkeys)) {
         $fkeys = array_keys($record);
     }
 
@@ -105,15 +207,12 @@ foreach ($data as $record) {
 
         // El nombre del campo esta en los grupos?
         if (in_array($curField, $groupKeys)) {
-            #if (in_array($idx,$levelsAgg[$fields[$i]])) {
             if (strlen($lastValue) == 0) {
                 $fieldTest = $record[$curField];
             } else {
                 $fieldTest = $lastValue.'_'.$record[$curField];
             }
 
-            //$operator = $groups["fields"][$fkeys[$i]]["agg"]["op"];
-            #$opField = $groups["fields"][$fkeys[$i]]["agg"]["field"];
 
             foreach ($groups["fields"][$curField] as $aggr ) {
                 foreach ($aggr as $operator=> $opFields) {
@@ -174,7 +273,6 @@ foreach ($data as $record) {
             $lastValue = $fieldTest;
         }
     }
-    $idx++;
 }
 // Treat the avg case , is detected when the value assignbed for an aggregate
 // field is an array  and his first element is not null , if is null is a
@@ -199,9 +297,11 @@ $totals = [];
 $groupStyle = isset($groups["options"]["style"]) ? $groups["options"]["style"]  : "";
 $footerStyle = isset($groups["options"]["showfooter"]) ? $groups["options"]["showfooter"]  : "bottom";
 
-echo "<table border='0'  width='50%' style='font-size: small'>";
+echo "<table border='0'  width='90%' style='font-size: small'>";
 
-foreach ($data as $record) {
+$veritradeAutos->dataStore("Veritrade")->popStart();
+while($record = $veritradeAutos->dataStore("Veritrade")->pop()) {
+//foreach ($data as $record) {
     $currLevel = 0;
     $lastValue = "";
     $row = "";
@@ -213,7 +313,7 @@ foreach ($data as $record) {
     for ($i = 0; $i < $numFields; $i++) {
         $curField = $fkeys[$i];
 
-        if (in_array($curField, $fields)) {
+        if (in_array($curField, $showColumnsKeys)) {
             // El nombre del campo esta en los grupos?
             if (in_array($curField, $groupKeys)) {
 
@@ -264,14 +364,14 @@ foreach ($data as $record) {
                             foreach ($groups["fields"][$curField] as $aggr ) {
                                 foreach ($aggr as $operator=> $opFields) {
                                     foreach ($opFields as $fld) {
-                                        $idx = array_search($fld, $fields);
+                                        $idx = array_search($fld, $showColumnsKeys);
                                         if ($idx !== false) {
                                             $orderedFields[$idx] = $fld;
                                         }
                                     }
                                 }
                                 ksort($orderedFields);
-                                for ($j=$i+1 ; $j < count($fields); $j++ ) {
+                                for ($j=$i+1 ; $j < count($showColumnsKeys); $j++ ) {
                                     if (!isset($orderedFields[$j])) {
                                         $totals[$lastValue] .= "<td></td>";
                                     } else {
@@ -295,7 +395,7 @@ foreach ($data as $record) {
                             foreach ($groups["fields"][$curField] as $aggr ) {
                                 foreach ($aggr as $operator=> $opFields) {
                                     foreach ($opFields as $fld) {
-                                        $idx = array_search($fld, $fields);
+                                        $idx = array_search($fld, $showColumnsKeys);
                                         if ($idx !== false) {
                                             $orderedFields[$idx] = $fld;
                                         }
@@ -303,7 +403,7 @@ foreach ($data as $record) {
                                 }
                                 ksort($orderedFields);
 
-                                for ($j=$i+1 ; $j < count($fields); $j++ ) {
+                                for ($j=$i+1 ; $j < count($showColumnsKeys); $j++ ) {
                                     if (!isset($orderedFields[$j])) {
                                         $ptotal .= "<td></td>";
                                     } else {
