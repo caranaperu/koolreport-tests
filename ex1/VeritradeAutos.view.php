@@ -1,6 +1,7 @@
 <?php
 
-use \koolreport\widgets\koolphp\Table;
+#use \koolreport\widgets\koolphp\Table;
+use \koolreport\widgets\koolphp\TableEx;
 use \koolreport\widgets\google\BarChart;
 use \koolreport\datagrid\DataTables;
 
@@ -108,25 +109,25 @@ use \koolreport\datagrid\DataTables;
     #));
     ?>
     <?php
-    Table::create([
+    TableEx::create([
         "name" => "ptable",
         "dataStore" => $this->dataStore('Veritrade'),
         "showFooter" => "bottom",
         "columns" => [
             "MARCA",
             "MODELO" => [
-                "footer" => "sum",
+                "footer" => "count",
                 "footerText" => "Total: @value"
             ],
-            "ANO_REPORTE"=>array("cssStyle"=>"text-align:right"),
+            "ANO"=>array("cssStyle"=>"text-align:right;color:blue;"),
             "CONTADOR" => [
                 "footer" => "sum",
                 "footerText" => "Total: @value",
-                "cssStyle" => "text-align:right"
+                "cssStyle" => "text-align:right;color:blue;"
             ]
         ],
         "paging"=>array(
-                        "pageSize"=>40,
+                        "pageSize"=>20,
                         "align"=>"center",
                         "pageIndex"=>0,
                     ),
@@ -145,10 +146,43 @@ use \koolreport\datagrid\DataTables;
         #"deferRender"=> true, # NO WORK
         #"deferLoading"=>true, #No Work
         #"ordering" => true, # WORLS
-        "removeDuplicate" => [
+        /*"removeDuplicate" => [
             "MARCA",
             "MODELO"
-        ]
+        ],*/
+        "removeDuplicate2" => [
+            "fields"=>  ["MARCA","MODELO","ANO" ],
+            "options"=> ["showfooter"=>"bottom","style"=>"one_line"] // bottom en este caso es el correcto , top por ahora no funca
+        ],
+        "removeDuplicate" => [
+            "fields"=>  [
+                "MARCA" => [
+                    "agg" => array(
+                        "sum" => [
+                            "CONTADOR",
+                            "SUMADOR"
+                        ],
+                        "max" => ["ANO"],
+                        "count" => ["MODELO"]
+                    ),
+                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:moccasin;"
+                ],
+                "MODELO" => [
+                    "agg" => array(
+                        "avg" => ["CONTADOR"],
+                        "count" => ["ANO"]
+                    ),
+                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:papayawhip;"
+                ],
+                #"MODELO",
+                /*"ANO"=>["agg" => array("sum" => ["CONTADOR"]),
+                        "cssStyle" => "text-align:right;color:red;font-weight: bold;"
+                ]*/
+               // "ANO"
+            ],
+            "options"=> ["showfooter"=>"bottom","style"=>"one_lines"] // one line funca en bottom
+        ],
+        "cssClass"=>["tr"=>"testTrClass","td"=>"testTDClass"]
     ]);
     ?>
     <?php

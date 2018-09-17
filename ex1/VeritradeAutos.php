@@ -24,11 +24,13 @@ class VeritradeAutos extends \koolreport\KoolReport
         );
     }
 
+
     public function setup()
     {
         $this->src('sqlserver')
-            ->query("SELECT MARCA,MODELO,ANO_REPORTE,count(*) as CONTADOR FROM veritrade group by MARCA,MODELO,ANO_REPORTE order by MARCA,MODELO,ANO_REPORTE")
-            #->query("SELECT MARCA,MODELO,ANO_REPORTE,count(*) as CONTADOR FROM veritrade WHERE MARCA=:MARCA group by MARCA,MODELO,ANO_REPORTE order by MARCA,MODELO,ANO_REPORTE")
+            #->query("SELECT top 10000 MARCA,MODELO,VERSION,ANO_REPORTE as ANO,1 as CONTADOR FROM veritrade where MARCA IS NOT NULL order by MARCA,MODELO,VERSION,ANO_REPORTE")
+            ->query("SELECT MARCA,MODELO,ANO_REPORTE as ANO,count(*) as CONTADOR FROM veritrade where MARCA IS NOT NULL group by MARCA,MODELO,ANO_REPORTE order by MARCA,MODELO,ANO_REPORTE")
+
             #->params(array(":MARCA"=>$this->params["MARCA"]))
             #->pipe(new Limit(array(1000)))
             #->pipe(new \koolreport\processes\AggregatedColumn(array("total"=>array("sum","CONTADOR"))))
