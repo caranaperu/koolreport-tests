@@ -180,7 +180,7 @@ use \koolreport\datagrid\DataTables;
                 ]*/
                // "ANO"
             ],
-            "options"=> ["showfooter"=>"bottom","style"=>"one_lines"] // one line funca en bottom
+            "options"=> ["showfooter"=>"bottom","style"=>"one_line"] // one line funca en bottom
         ],
         "cssClass"=>["tr"=>"testTrClass","td"=>"testTDClass"]
     ]);
