@@ -134,3 +134,23 @@ foreach($groups as $field) {
     }
 }
 print_r($orderedAggFields);
+
+$arr = [
+    'a',
+    'b' => ['foo' => 1, 'bar' => 'X'],
+    'c' => ['baz' => 'Z'],
+    'd'
+];
+
+$res = [];
+$keys = array_keys($arr);
+$vals = array_values($arr);
+foreach ($vals as $i => $v) {
+    if (is_array($v)) {
+        $res[$keys[$i]] = $v;
+    } else {
+        $res[$v] = [];
+    }
+}
+
+print_r($res);

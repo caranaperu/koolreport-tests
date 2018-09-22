@@ -119,70 +119,81 @@ use \koolreport\datagrid\DataTables;
                 "footer" => "count",
                 "footerText" => "Total: @value"
             ],
-            "ANO"=>array("cssStyle"=>"text-align:right;color:blue;"),
+            "ANO" => ["cssStyle" => "text-align:right;color:blue;"],
             "CONTADOR" => [
                 "footer" => "sum",
                 "footerText" => "Total: @value",
                 "cssStyle" => "text-align:right;color:blue;"
+            ],
+            "CC" => "#"
+        ],
+        "paging" => [
+            "pageSize" => 40,
+            "align" => "center",
+            "pageIndex" => 0,
+        ],
+        "removeDuplicate22" => [
+            "fields" => [
+                "MARCA",
+                "MODELO"
             ]
         ],
-        "paging"=>array(
-                        "pageSize"=>20,
-                        "align"=>"center",
-                        "pageIndex"=>0,
-                    ),
-        "fixedHeader" => true,
-
-        "options" => [
-            #"searching"=>true,
-            #"paging"=>true,
-            "fixedHeader" => true,
-            "rowGroup" => true,
-            "processing" => true,
-            #"rowGroup"=>array('dataSrc'=> 0),
-            #'scrollY' => 400  # WORKS> con o sin pagin (mejor no en paging)
-            #"serverSide"=> true,
-        ],
-        #"deferRender"=> true, # NO WORK
-        #"deferLoading"=>true, #No Work
-        #"ordering" => true, # WORLS
-        /*"removeDuplicate" => [
-            "MARCA",
-            "MODELO"
-        ],*/
-        "removeDuplicate2" => [
-            "fields"=>  ["MARCA","MODELO","ANO" ],
-            "options"=> ["showfooter"=>"bottom","style"=>"one_line"] // bottom en este caso es el correcto , top por ahora no funca
-        ],
         "removeDuplicate" => [
-            "fields"=>  [
+            "fields" => [
                 "MARCA" => [
-                    "agg" => array(
+                    "agg" => [
                         "sum" => [
-                            "CONTADOR",
+                            "CONTADOR" => [
+                                "formatValue" => "$ @value",
+                                "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:orange;"
+                            ],
                             "SUMADOR"
                         ],
-                        "max" => ["ANO"],
-                        "count" => ["MODELO"]
-                    ),
-                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:moccasin;"
+                        "max" => [
+                            "ANO" => [
+                                "formatValue"=>function($value) {return "[".$value."]";},
+                                "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:orange;"
+                            ]
+                        ],
+                        "dcount" => ["MODELO" => ["cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:orange;"]]
+                    ],
+                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:moccasin;",
+                    "totalText" => "Total @fname :",
+                    "totalCss" => "text-align:left;font-weight: bold;background-color:moccasin;"
                 ],
+                //"MARCA",
                 "MODELO" => [
-                    "agg" => array(
+                    "agg" => [
                         "avg" => ["CONTADOR"],
-                        "count" => ["ANO"]
-                    ),
-                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:papayawhip;"
+                        "count" => ["ANO"=> [
+                            "formatValue"=>function($value) {return "<".$value.">";},
+                            "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:yellow;"
+                        ]]
+                    ],
+                    "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:papayawhip;",
+                    "totalText" => "Total @fname :",
+                    "totalCss" => "text-align:left;font-weight: bold;background-color:papayawhip;"
                 ],
-                #"MODELO",
+                // "MODELO",
                 /*"ANO"=>["agg" => array("sum" => ["CONTADOR"]),
-                        "cssStyle" => "text-align:right;color:red;font-weight: bold;"
+                        "cssStyle" => "text-align:right;color:red;font-weight: bold;",
+                        "totalCss"=>"text-align:left;font-weight: bold;background-color:moccasin;"
+
                 ]*/
-               // "ANO"
+                // "ANO"
             ],
-            "options"=> ["showfooter"=>"bottom","style"=>"one_line"] // one line funca en bottom
+            // Top solo fiunciona cuando los campos de grupo van de izquierda a derecha, de lo contrario usar
+            // bottom.
+            "options" => [
+                "showfooter" => "bottom",
+                "style" => "one_line"
+            ]
+            // one line funca en bottom
         ],
-        "cssClass"=>["tr"=>"testTrClass","td"=>"testTDClass"]
+        "cssClass" => [
+            "tr" => "testTrClass",
+            "td" => "testTDClass"
+        ]
     ]);
     ?>
     <?php

@@ -1,7 +1,7 @@
 
 <?php
 use \koolreport\widgets\koolphp\Table;
-use \koolreport\datagrid\DataTables;
+#use \koolreport\datagrid\DataTables;
 
 ?>
 
@@ -22,9 +22,9 @@ Table::create(array(
                      "moneda_costo_descripcion"=> array("label"=>"Moneda")
 
     ),
-    "rowGroup"=>true,
+   # "rowGroup"=>true,
     "removeDuplicate"=>array("insumo_codigo","insumo_descripcion","tinsumo_descripcion","tcostos_descripcion",
-                             "unidad_medida_descripcion"), # NOT SUPPORTED
+                            "unidad_medida_descripcion"), # NOT SUPPORTED
     'paging' => array(
         'size' => 20,
         'maxDisplayedPages' => 5

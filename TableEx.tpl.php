@@ -19,7 +19,7 @@ $tfClass = Utility::get($this->cssClass, "tf");
 
 ?>
 <div class="koolphp-table <?php echo $this->responsive ? "table-responsive" : ""; ?>" id="<?php echo $this->name; ?>">
-    <table<?php echo ($tableCss) ? " class='table $tableCss'" : " class='table' border='0'"; ?>>
+    <table<?php echo ($tableCss) ? " class='table $tableCss'" : " class='table' border='1'"; ?>>
         <?php
         if ($this->showHeader) {
             ?>
@@ -105,8 +105,10 @@ $tfClass = Utility::get($this->cssClass, "tf");
         unset($cssStyle);
 
         $numFields = count($showColumnKeys);
+        $numGroupColumns = count($groupColumns);
 
         $i = 0;
+        $cnt=0;
         $this->dataStore->popStart();
         while ($row = $this->dataStore->pop()) {
             // Reinitialize vars
@@ -132,12 +134,23 @@ $tfClass = Utility::get($this->cssClass, "tf");
 
                 $tdTotalHtml = $tdHtml;
                 if (isset($groupColumnsCss[$cKey])) {
-                    $tdTotalHtml .= " style='$groupColumnsCss[$cKey]'";
+                    $tdTotalHtml .= "style='$groupColumnsCss[$cKey]'";
                 }
+
+                $tdTotalTextHtml = $tdHtml;
+                if (isset($groupTotalCss[$cKey])) {
+                    $tdTotalTextHtml .= " style='$groupTotalCss[$cKey]'";
+                }
+
 
                 if ($tdStyle[$cKey]) {
                     $tdHtml .= " style='$tdStyle[$cKey]'";
                 }
+                $tdHtml .= " row-value='".(($cKey!=="#")?$row[$cKey]:($cnt+$meta["columns"][$cKey]["start"]))."'";
+
+
+                // Formated field value
+                $ffField = $this->formatValue(($cKey!=="#")?$row[$cKey]:(($cnt++)+$meta["columns"][$cKey]["start"]),$meta["columns"][$cKey],$row);
 
 
                 // El nombre del campo esta en los grupos?
@@ -162,8 +175,8 @@ $tfClass = Utility::get($this->cssClass, "tf");
 
                         // Print the normal row if footer is at bottom
                         if ($footerStyle == "bottom") {
-                            if ($groupStyle != "one_line" && $currLevel < count($groupColumns)) {
-                                $rowout .= $tdHtml.">".$row[$cKey]."</td></tr>";
+                            if ($groupStyle != "one_line" && $currLevel < $numGroupColumns) {
+                                $rowout .= $tdHtml.">".$ffField."</td></tr>";
                                 $rowout .= "<tr $trClassHtml>"; // New row
 
                                 for ($j = 0; $j <= $k; $j++) {
@@ -171,7 +184,7 @@ $tfClass = Utility::get($this->cssClass, "tf");
                                 }
 
                             } else {
-                                $rowout .= $tdHtml.">$row[$cKey]</td>";
+                                $rowout .= $tdHtml.">$ffField</td>";
                             }
 
                             // Prepare the total string to be printed
@@ -184,47 +197,89 @@ $tfClass = Utility::get($this->cssClass, "tf");
                                 if (isset($orderedAggFields[$cKey])) {
 
                                     // assembly the total row
-                                    $totals[$lastValue] .= "<tr $trClassHtml>"; // new row
+                                    $totals[$lastValue] = "<tr $trClassHtml>"; // new row
 
                                     if ($k > 0) {
                                         $totals[$lastValue] .= $tdHtml." colspan='$k.'></td>";
                                     }
-                                    $totals[$lastValue] .= $tdHtml.">Total $row[$cKey] =></td>";
+
+                                    if (isset($groupTotalText[$cKey])) {
+                                        $totals[$lastValue] .= $tdTotalTextHtml.">".str_replace("@fname",$row[$cKey],$groupTotalText[$cKey])."</td>";
+                                    } else {
+                                        $totals[$lastValue] .= $tdTotalTextHtml.">Total $row[$cKey] =></td>";
+                                    }
 
                                     // The totals value
                                     for ($j = $k + 1; $j < $numFields; $j++) {
+                                        $tdAggTotalHtml = $tdTotalHtml;
+
                                         if (!isset($orderedAggFields[$cKey][$j])) {
                                             $totals[$lastValue] .= $tdHtml."></td>";
                                         } else {
-                                            $totals[$lastValue] .= $tdTotalHtml.">".$levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]]."</td>";
+                                            $totalField = $levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]];
+                                            //  Total cell has is own style? change it.
+                                            // Had his onw format , change it
+                                            if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]])) {
+                                                if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["cssStyle"])) {
+                                                    $tdAggTotalHtml = $tdHtml." style='".$aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["cssStyle"]."'";
+                                                }
+
+                                                if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["formatValue"])) {
+                                                    // The formatValue function extract the formatValue key from the field options definition .
+                                                    $totalField = $this->formatValue($levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]],$aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]);
+                                                }
+                                            }
+                                            $totals[$lastValue] .= $tdAggTotalHtml.">".$totalField."</td>";
                                         }
                                     }
                                     $totals[$lastValue] .= "</tr>";
                                 }
                             }
                         } else {
+                            //*********************************************
+                            // Print the normal row if footer is at top
+                            //*********************************************
 
-
-                            // Print the normal row if footer is at bottom
-                            if (isset($levelsAgg) && count($levelsAgg) > 0) {
-                                if ($k > 0) {
-                                    $ptotal .= "<tr $trClassHtml>"; // new row
-                                    $ptotal .= $tdHtml." colspan='".($k)."'></td>";
-                                }
-                                $ptotal .= $tdHtml.">".$row[$cKey]."</td>";
-
-                                // The totals value
-                                for ($j = $k + 1; $j < $numFields; $j++) {
-                                    if (!isset($orderedAggFields[$cKey][$j])) {
-                                        $ptotal .= $tdHtml."></td>";
-                                    } else {
-                                        // is a total , need an specific style if  assigned
-                                        $ptotal .= $tdTotalHtml.">".$levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]]."</td>";
+                            // If is a group field and has a total , we process as normal group , otherwise
+                            // as a standard field.
+                            if (isset($levelsAgg[$lastValue])) {
+                                if (isset($levelsAgg) && count($levelsAgg) > 0) {
+                                    if ($k > 0) {
+                                        $ptotal .= "<tr $trClassHtml>"; // new row
+                                        $ptotal .= $tdHtml." colspan='".($k)."'></td>";
                                     }
-                                }
+                                    $ptotal .= $tdTotalTextHtml.">$ffField</td>";
 
-                                $ptotal .= "</tr>";
-                                $rowout .= $tdHtml."></td>";
+                                    // The totals value
+                                    for ($j = $k + 1; $j < $numFields; $j++) {
+                                        $tdAggTotalHtml = $tdTotalHtml;
+
+                                        if (!isset($orderedAggFields[$cKey][$j])) {
+                                            $ptotal .= $tdHtml."></td>";
+                                        } else {
+                                            $totalField = $levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]];
+                                            // is a total , need an specific style if  assigned
+                                            //  Total cell has is own style? change it.
+                                            // Had his own format , change it
+                                            if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]])) {
+                                                if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["cssStyle"])) {
+                                                    $tdAggTotalHtml = $tdHtml." style='".$aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["cssStyle"]."'";
+                                                }
+
+                                                if (isset($aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]["formatValue"])) {
+                                                    // The formatValue function extract the formatValue key from the field options definition .
+                                                    $totalField = $this->formatValue($levelsAgg[$lastValue][$orderedAggFields[$cKey][$j]],$aggFieldOptions[$cKey][$orderedAggFields[$cKey][$j]]);
+                                                }
+                                            }
+                                            $ptotal .= $tdAggTotalHtml.">".$totalField."</td>";
+                                        }
+                                    }
+
+                                    $ptotal .= "</tr>";
+                                    $rowout .= $tdHtml."></td>";
+                                }
+                            } else {
+                                $rowout .= $tdHtml.">$ffField</td>";
                             }
                         }
                     } else {
@@ -234,7 +289,7 @@ $tfClass = Utility::get($this->cssClass, "tf");
                     $lastLevels[$currLevel] = $lastValue;
 
                 } else {
-                    $rowout .= $tdHtml.">".$row[$cKey]."</td>";
+                    $rowout .= $tdHtml.">$ffField</td>";
                 }
             }
 
