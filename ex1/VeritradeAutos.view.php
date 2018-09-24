@@ -1,9 +1,10 @@
 <?php
 
 #use \koolreport\widgets\koolphp\Table;
-use \koolreport\widgets\koolphp\TableEx;
-use \koolreport\widgets\google\BarChart;
-use \koolreport\datagrid\DataTables;
+#use \koolreport\widgets\koolphp\TableEx;
+use \koolreport\futurelabs\TableEx;
+///use \koolreport\widgets\google\BarChart;
+//use \koolreport\datagrid\DataTables;
 
 ?>
 
@@ -185,7 +186,7 @@ use \koolreport\datagrid\DataTables;
             // Top solo fiunciona cuando los campos de grupo van de izquierda a derecha, de lo contrario usar
             // bottom.
             "options" => [
-                "showfooter" => "bottom",
+                "showfooter" => "top",
                 "style" => "one_line"
             ]
             // one line funca en bottom
