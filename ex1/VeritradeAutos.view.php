@@ -1,10 +1,7 @@
 <?php
 
-#use \koolreport\widgets\koolphp\Table;
-#use \koolreport\widgets\koolphp\TableEx;
 use \koolreport\futurelabs\TableEx;
-///use \koolreport\widgets\google\BarChart;
-//use \koolreport\datagrid\DataTables;
+
 
 ?>
 
@@ -22,30 +19,13 @@ use \koolreport\futurelabs\TableEx;
         overflow: auto;
     }
 
-    .koolphp-table table {
+    .table {
         font-size: 11px;
     }
 
-    .koolphp-table table > tbody > tr > td {
+    .table > tbody > tr > td {
         line-height: normal;
         border-top: 0px;
-        padding: 2px;
-    }
-
-    .krPivotMatrix table {
-        font-size: 11px;
-    }
-
-    .krPivotMatrix td {
-        height: 20px;
-    }
-
-    .krpmField.krpmRowField.btn, .krpmField.krpmColumnField.btn, .krpmField.krpmDataField.btn {
-        font-size: 12px;
-    }
-
-    .krPivotMatrix table > tbody > tr > td {
-        line-height: normal;
         padding: 2px;
     }
 
@@ -67,7 +47,6 @@ use \koolreport\futurelabs\TableEx;
         }
 
     }
-
 
 </style>
 
@@ -152,7 +131,9 @@ use \koolreport\futurelabs\TableEx;
                         ],
                         "max" => [
                             "ANO" => [
-                                "formatValue"=>function($value) {return "[".$value."]";},
+                                "formatValue" => function ($value) {
+                                    return "[".$value."]";
+                                },
                                 "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:orange;"
                             ]
                         ],
@@ -166,10 +147,14 @@ use \koolreport\futurelabs\TableEx;
                 "MODELO" => [
                     "agg" => [
                         "avg" => ["CONTADOR"],
-                        "count" => ["ANO"=> [
-                            "formatValue"=>function($value) {return "<".$value.">";},
-                            "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:yellow;"
-                        ]]
+                        "count" => [
+                            "ANO" => [
+                                "formatValue" => function ($value) {
+                                    return "<".$value.">";
+                                },
+                                "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:yellow;"
+                            ]
+                        ]
                     ],
                     "cssStyle" => "text-align:right;color:black;font-weight: bold;background-color:papayawhip;",
                     "totalText" => "Total @fname :",
@@ -186,7 +171,7 @@ use \koolreport\futurelabs\TableEx;
             // Top solo fiunciona cuando los campos de grupo van de izquierda a derecha, de lo contrario usar
             // bottom.
             "options" => [
-                "showfooter" => "top",
+                "showfooter" => "bottom",
                 "style" => "one_line"
             ]
             // one line funca en bottom
@@ -194,7 +179,15 @@ use \koolreport\futurelabs\TableEx;
         "cssClass" => [
             "tr" => "testTrClass",
             "td" => "testTDClass"
+        ],
+        "clientEvents" => [
+            "rowClick" => "function(e){
+                console.log(e.rowIndex);
+                console.log(e.rowData);
+                console.log(e.table);
+            }"
         ]
+
     ]);
     ?>
     <?php

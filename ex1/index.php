@@ -2,7 +2,7 @@
 require_once "VeritradeAutos.php";
 
 
-$params = array("MARCA"=>"MAZDA");
+#$params = array("MARCA"=>"MAZDA");
 
 $veritradeAutos = new VeritradeAutos($params);
 //$veritradeAutos->run()->export()->pdf(array(
