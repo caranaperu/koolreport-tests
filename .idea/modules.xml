@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/examples2.iml" filepath="$PROJECT_DIR$/.idea/examples2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../koolreport/packages/futurelabs/.idea/futurelabs.iml" filepath="$PROJECT_DIR$/../../../koolreport/packages/futurelabs/.idea/futurelabs.iml" />
     </modules>
   </component>
 </project>

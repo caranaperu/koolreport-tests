@@ -20,7 +20,10 @@ use \koolreport\futurelabs\TableEx;
     }
 
     .table {
-        font-size: 11px;
+        font-size: 10px;
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .table > tbody > tr > td {
@@ -116,6 +119,10 @@ use \koolreport\futurelabs\TableEx;
             "fields" => [
                 "MARCA",
                 "MODELO"
+            ],
+            "options" => [
+                "showfooter" => "top",
+                "style" => "one_linea"
             ]
         ],
         "removeDuplicate" => [
@@ -171,7 +178,7 @@ use \koolreport\futurelabs\TableEx;
             // Top solo fiunciona cuando los campos de grupo van de izquierda a derecha, de lo contrario usar
             // bottom.
             "options" => [
-                "showfooter" => "bottom",
+                "showfooter" => "top",
                 "style" => "one_line"
             ]
             // one line funca en bottom

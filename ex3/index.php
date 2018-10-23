@@ -2,11 +2,11 @@
 require_once "ClabsDemoHeader.php";
 require_once "ClabsDemo.php";
 
-$clabsDemoHeader = new ClabsDemoHeader();
+$clabsDemoHeader = new FLabHistoricoCostosHeader();
 $clabsDemoHeader->run()->render();
 
-$clabsDemo = new ClabsDemo();
+$clabsDemo = new FLabHistoricoCostosDetail();
 $clabsDemo->run()->render();
 
-#$clabsDemo = new ClabsDemo();
+#$clabsDemo = new FLabHistoricoCostosDetail();
 #$clabsDemo->run()->render();

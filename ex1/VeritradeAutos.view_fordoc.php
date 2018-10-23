@@ -7,7 +7,7 @@ use \koolreport\futurelabs\TableEx;
 <style>
 
 .table {
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .table > tbody > tr > td {
